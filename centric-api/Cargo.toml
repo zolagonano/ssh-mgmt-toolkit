@@ -1,0 +1,23 @@
+[package]
+name = "centric-api"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+[dependencies]
+reqwest = { version = "0.11.16", features = ["rustls", "json"] }
+diesel = { version = "2.0.0", features = ["postgres", "chrono"] }
+serde = { version = "1.0.147", features = ["derive"] }
+rocket = { version = "=0.5.0-rc.3", features = ["json"] }
+dotenvy = "0.15.7"
+rocket_sync_db_pools = { version = "0.1.0-rc.2", features = ["diesel_postgres_pool"] }
+uri = "0.4.0"
+url = "2.3.1"
+jsonwebtoken = "8.3.0"
+chrono = "0.4.24"
+rand = "0.8.5"
+pwhash = "1.0.0"
+
