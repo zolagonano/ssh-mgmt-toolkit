@@ -1,0 +1,2 @@
+[default.databases.SSHMGMTCentricDB]
+url = "postgres://<USERNAME>:<PASSWORD>@<HOST>:<PORT>/<DB_NAME>"
