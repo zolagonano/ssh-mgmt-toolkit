@@ -15,6 +15,7 @@ use crate::consts::JWT_SECRET;
 // NOTE: Data models used in serializing request data should become a separated library in future
 // because they will be needed in the telegram-bot as well
 
+/// Struct representing parameters for user lookup.
 #[derive(Deserialize, Serialize)]
 pub struct UserLookupParams {
     pub username: Option<String>,
@@ -22,29 +23,34 @@ pub struct UserLookupParams {
     pub group: Option<String>,
 }
 
+/// Struct representing user expiration date.
 #[derive(Deserialize, Serialize)]
 pub struct UserExpDate {
     pub username: String,
     pub exp_date: String,
 }
 
+/// Struct representing user password.
 #[derive(Deserialize, Serialize)]
 pub struct UserPasswd {
     pub username: String,
     pub password: String,
 }
 
+/// Struct representing user group.
 #[derive(Deserialize, Serialize)]
 pub struct UserGrp {
     pub username: String,
     pub group: String,
 }
 
+/// Struct representing only username.
 #[derive(Deserialize, Serialize)]
 pub struct OnlyUser {
     pub username: String,
 }
 
+/// Struct representing auto-generated SSH user.
 #[derive(Deserialize, Serialize)]
 pub struct AutoSSHUser {
     pub prefix: String,
@@ -53,6 +59,7 @@ pub struct AutoSSHUser {
     pub group: String,
 }
 
+/// Struct representing input for SSH user.
 #[derive(Deserialize, Serialize)]
 pub struct InputSSHUser {
     pub username: String,
@@ -62,15 +69,18 @@ pub struct InputSSHUser {
     pub shell: Option<String>,
 }
 
+/// Struct representing JWT claims.
 #[derive(Deserialize, Serialize)]
 pub struct Claims {
     pub role: String,
     pub exp: u64,
 }
 
+/// Struct representing an API token.
 #[derive(Debug)]
 pub struct Token(String);
 
+/// Enum representing possible API token errors.
 #[derive(Debug)]
 pub enum ApiTokenError {
     Missing,
@@ -108,6 +118,7 @@ impl Token {
     }
 }
 
+/// Enum representing user roles.
 pub enum Role {
     Privileged,
     Normal,
