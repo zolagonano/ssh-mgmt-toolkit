@@ -17,6 +17,7 @@ pub mod config {
     use config::Config;
     use serde::{Deserialize, Serialize};
 
+    /// Represents information about an SSH management node.
     #[derive(Serialize, Deserialize, Clone)]
     pub struct NodeInfo {
         name: String,
@@ -24,21 +25,25 @@ pub mod config {
         capacity: Option<u64>,
     }
 
+    /// Represents the configuration file structure for SSH management.
     #[derive(Serialize, Deserialize, Clone)]
     pub struct ConfigFile {
         pub node_info: NodeInfo,
     }
 
     impl ConfigFile {
+        /// Loads the configuration from the specified file path ("/etc/sshmgmt_config.json").
+        ///
+        /// # Errors
+        ///
+        /// Returns a `Result` with `ConfigFile` if successful, or a `Box<dyn std::error::Error>`
+        /// on failure.
         pub fn load() -> Result<ConfigFile, Box<dyn std::error::Error>> {
             let settings = Config::builder()
-                .add_source(config::File::with_name(
-                    "/etc/sshmgmt_config.json",
-                ))
+                .add_source(config::File::with_name("/etc/sshmgmt_config.json"))
                 .build()?;
 
             Ok(settings.try_deserialize::<ConfigFile>()?)
         }
     }
 }
-
