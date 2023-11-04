@@ -70,6 +70,7 @@ pub mod models {
 }
 
 //NOTE: Deprecated should be removed in newer versions
+/// Deprecated struct. Should be removed in newer versions.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UserCredentials {
     pub username: String,
@@ -77,6 +78,7 @@ pub struct UserCredentials {
 }
 
 impl UserCredentials {
+    /// Creates a new `UserCredentials` instance with a hashed password.
     pub fn new(username: String) -> UserCredentials {
         UserCredentials {
             username: username.clone(),
@@ -84,6 +86,7 @@ impl UserCredentials {
         }
     }
 
+    /// Creates a new `UserCredentials` instance with provided username and hashed password.
     pub fn new_raw(username: String, password: String) -> UserCredentials {
         // Verify password hash formatting
         UserCredentials {
@@ -92,10 +95,12 @@ impl UserCredentials {
         }
     }
 
+    /// Hashes a password using SHA-512 crypt.
     pub fn hash_password(password: &str) -> String {
         sha512_crypt::hash_with(consts::PASSWD_PARAMS, password).unwrap()
     }
 
+    /// Generates a psudo-random password based on the given username.
     pub fn gen_password(username: String) -> String {
         //TODO: just randomly generate it
         let mut hasher = Sha256::new();
@@ -109,14 +114,18 @@ impl UserCredentials {
         format!("{}{}", consts::PASSWD_PREFIX, &hex_hash[10..16])
     }
 
+    /// Gets the username from the credentials.
     pub fn get_username(&self) -> &str {
         &self.username
     }
+
+    /// Gets the hashed password from the credentials.
     pub fn get_password_hash(&self) -> &str {
         &self.password_hash
     }
 }
 
+/// Struct representing an SSH user, composed of user credentials, shell, usergroup, and expiration date.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SSHUser {
     #[serde(flatten)]
@@ -127,6 +136,7 @@ pub struct SSHUser {
 }
 
 impl SSHUser {
+    /// Automatically adds an SSH user with incremented username, default shell, usergroup, and expiration date.
     pub fn auto_add(
         users_info: (&str, u64),
         usergroup: String,
@@ -145,6 +155,7 @@ impl SSHUser {
         )
     }
 
+    /// Adds an SSH user with the provided username, shell, usergroup, expiration date, and password.
     pub fn add(
         username: String,
         shell: String,
@@ -184,6 +195,7 @@ impl SSHUser {
         }
     }
 
+    /// Restores password from the username (will be removed due to security issues).
     pub fn restore_password(username: String) -> UserRawCreds {
         let password = UserCredentials::gen_password(username.clone());
         let password_hash = UserCredentials::hash_password(&password);
@@ -195,10 +207,12 @@ impl SSHUser {
         }
     }
 
+    /// Deletes the current SSH user.
     pub fn del(&self) -> Result<UserStatus, UserErrors> {
         Self::userdel(self.user_credentials.get_username())
     }
 
+    /// Deletes an SSH user by username.
     pub fn userdel(username: &str) -> Result<UserStatus, UserErrors> {
         let process_status = Command::new("userdel").arg(username).status();
 
@@ -217,6 +231,7 @@ impl SSHUser {
         }
     }
 
+    /// Changes the password of the current SSH user.
     pub fn usermod_change_pass(username: &str, password: &str) -> Result<UserRawCreds, UserErrors> {
         let password_hash = UserCredentials::hash_password(password);
 
@@ -242,10 +257,12 @@ impl SSHUser {
         }
     }
 
+    /// Changes the expiration date of the current SSH user.
     pub fn chexp(&self, exp_date: &str) -> Result<ChExpMsg, UserErrors> {
         Self::usermod_change_exp(self.user_credentials.get_username(), exp_date)
     }
 
+    /// Changes the expiration date of an SSH user by username.
     pub fn usermod_change_exp(username: &str, exp_date: &str) -> Result<ChExpMsg, UserErrors> {
         let exp_date = Self::format_exp_date(exp_date)?;
 
@@ -395,6 +412,7 @@ impl SSHUser {
         }
     }
 
+    /// Retrieves SSH user information by username.
     pub fn get_user(username: &str) -> Option<SSHUserInfo> {
         match users::get_user_by_name(username) {
             Some(user) => {
@@ -419,6 +437,7 @@ impl SSHUser {
         }
     }
 
+    /// Retrieves a list of usernames matching the provided prefix.
     pub fn get_users_by_prefix(prefix: &str) -> Vec<String> {
         Self::get_users_core(prefix, None)
     }
@@ -452,21 +471,25 @@ impl SSHUser {
         users_list
     }
 
+    /// Retrieves resource usage for a specific user group.
     pub fn get_usage_by_group(usergroup: &str) -> Result<HashMap<String, f64>, UserErrors> {
         let users = Self::get_users_by_group(usergroup);
         Self::get_usage_core(&users)
     }
 
+    /// Retrieves resource usage for a specific username.
     pub fn get_usage_by_name(username: &str) -> Result<HashMap<String, f64>, UserErrors> {
         Self::get_usage_core(&vec![username.to_string()])
     }
 
+    /// Retrieves resource usage for usernames matching the provided prefix.
     pub fn get_usage_by_prefix(prefix: &str) -> Result<HashMap<String, f64>, UserErrors> {
         let users = Self::get_users_by_prefix(prefix);
         Self::get_usage_core(&users)
     }
 
     // NOTE: Needs Cleaning up and optimization and error handling
+    /// Core method for retrieving resource usage for a list of usernames.
     pub fn get_usage_core(users: &Vec<String>) -> Result<HashMap<String, f64>, UserErrors> {
         let binding = match std::fs::read_to_string(consts::NETHOGS_TRACE_PATH) {
             Ok(binding) => binding,
@@ -496,6 +519,7 @@ impl SSHUser {
         Ok(usage_list)
     }
 
+    /// Formats an expiration date string into the required format.
     fn format_exp_date(exp_date: &str) -> Result<String, UserErrors> {
         let format = format_description!("[year]-[month]-[day]");
         match Date::parse(exp_date, &format) {
@@ -504,6 +528,7 @@ impl SSHUser {
         }
     }
 
+    /// Converts Unix user command exit codes to corresponding errors.
     fn unixuser_code_to_err(code: Option<i32>) -> Option<UserErrors> {
         if let Some(code) = code {
             match code {
@@ -519,4 +544,3 @@ impl SSHUser {
         }
     }
 }
-
