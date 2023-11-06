@@ -19,7 +19,9 @@ use crate::schema::sells::{
 use crate::schema::services::{dsl::services as services_dsl, table as services_table};
 use crate::schema::users::{dsl::users as users_dsl, ref_id as field_ref_id, table as users_table};
 
-use crate::schema::logins::{dsl::logins as logins_dsl, table as logins_table, username as login_username};
+use crate::schema::logins::{
+    dsl::logins as logins_dsl, table as logins_table, username as login_username,
+};
 
 use diesel::result::Error as DieselError;
 use rocket::serde::json::{json, Json, Value as JsonValue};
@@ -27,13 +29,13 @@ use rocket::serde::json::{json, Json, Value as JsonValue};
 pub type ApiError = (Status, JsonValue);
 
 #[derive(Serialize, Deserialize)]
-pub struct JsonOk<T>{
-    pub Ok: T
+pub struct JsonOk<T> {
+    pub Ok: T,
 }
 
-impl<T> JsonOk<T>{
-    pub fn from(value: T) -> Json<Self>{
-        Json(JsonOk {Ok: value})
+impl<T> JsonOk<T> {
+    pub fn from(value: T) -> Json<Self> {
+        Json(JsonOk { Ok: value })
     }
 }
 
@@ -124,7 +126,7 @@ impl JsonResponseError for ReqwestError {
 }
 
 // NODES TABLE
-
+/// Structure representing a node in the system
 #[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
 #[diesel(table_name = nodes)]
 pub struct Node {
@@ -135,6 +137,7 @@ pub struct Node {
 }
 
 impl Node {
+    /// Asynchronously finds a node by its ID
     pub async fn find_by_id(db: &Db, id: i32) -> Result<Node, ApiError> {
         let node_info = db
             .run(move |conn| {
@@ -148,6 +151,7 @@ impl Node {
         Ok(node_info)
     }
 
+    /// Asynchronously inserts a new node into the database
     pub async fn insert(db: &Db, node_value: NewNode) -> Result<Node, ApiError> {
         let node_info = db
             .run(move |conn| {
@@ -161,6 +165,7 @@ impl Node {
         Ok(node_info)
     }
 
+    /// Asynchronously updates an existing node in the database
     pub async fn update(
         db: &Db,
         id: i32,
@@ -178,6 +183,7 @@ impl Node {
         Ok(node_info)
     }
 
+    /// Asynchronously retrieves a list of all nodes from the database
     pub async fn list(db: &Db) -> Result<Vec<Node>, ApiError> {
         let nodes_list = db
             .run(|conn| nodes_table.load(conn).map_err(|err| err.jsonify()))
@@ -186,6 +192,7 @@ impl Node {
         Ok(nodes_list)
     }
 
+    /// Asynchronously deletes a node by its ID
     pub async fn delete_by_id(db: &Db, id: i32) -> Result<bool, ApiError> {
         let deleted_nodes = db
             .run(move |conn| {
@@ -204,6 +211,7 @@ impl Node {
 
     // REQWEST SECTION
 
+    /// Asynchronously fetches hardware statistics from the node
     pub async fn hw_stats(&self) -> Result<JsonValue, ApiError> {
         let client = reqwest::Client::new();
 
@@ -221,6 +229,7 @@ impl Node {
             .map_err(|err| err.jsonify())?)
     }
 
+    /// Asynchronously fetches network statistics from the node
     pub async fn net_stats(&self) -> Result<JsonValue, ApiError> {
         let client = reqwest::Client::new();
 
@@ -238,6 +247,7 @@ impl Node {
             .map_err(|err| err.jsonify())?)
     }
 
+    /// Asynchronously retrieves information about the node
     pub async fn info(&self) -> Result<JsonValue, ApiError> {
         let node_api_response =
             reqwest::get(format!("{}{}", &self.address, consts::NODE_INFO_PATH))
@@ -250,6 +260,7 @@ impl Node {
             .map_err(|err| err.jsonify())?)
     }
 
+    /// Asynchronously changes the password for a user on the node
     pub async fn change_pass(
         &self,
         user_id: i32,
@@ -284,6 +295,7 @@ impl Node {
         sshuser_info.map_err(|err| (Status::InternalServerError, err))
     }
 
+    /// Asynchronously adds a new user to the node
     pub async fn useradd(
         &self,
         user_id: i32,
@@ -319,6 +331,7 @@ impl Node {
     }
 }
 
+/// Structure representing information for creating a new node
 #[derive(Insertable, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = nodes)]
@@ -328,6 +341,7 @@ pub struct NewNode {
     pub status: i32,
 }
 
+/// Structure representing information for updating a node
 #[derive(Insertable, Serialize, Deserialize, Clone, AsChangeset)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = nodes)]
@@ -339,6 +353,7 @@ pub struct UpdateNode {
 
 // SERVICES TABLE
 
+/// Structure representing a service
 #[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
 #[diesel(table_name = services)]
 pub struct Service {
@@ -349,7 +364,9 @@ pub struct Service {
     pub available: bool,
 }
 
+/// Implementation of operations related to services
 impl Service {
+    /// Asynchronously finds a service by its ID
     pub async fn find_by_id(db: &Db, id: i32) -> Result<Service, ApiError> {
         let service_info = db
             .run(move |conn| {
@@ -363,6 +380,7 @@ impl Service {
         Ok(service_info)
     }
 
+    /// Asynchronously inserts a new service into the database
     pub async fn insert(db: &Db, service_value: NewService) -> Result<Service, ApiError> {
         let service_info = db
             .run(move |conn| {
@@ -376,6 +394,7 @@ impl Service {
         Ok(service_info)
     }
 
+    /// Asynchronously updates an existing service in the database
     pub async fn update(
         db: &Db,
         id: i32,
@@ -393,6 +412,7 @@ impl Service {
         Ok(service_info)
     }
 
+    /// Asynchronously retrieves a list of all services from the database
     pub async fn list(db: &Db) -> Result<Vec<Service>, ApiError> {
         let services_list = db
             .run(|conn| services_table.load(conn).map_err(|err| err.jsonify()))
@@ -401,6 +421,7 @@ impl Service {
         Ok(services_list)
     }
 
+    /// Asynchronously deletes a service by its ID
     pub async fn delete_by_id(db: &Db, id: i32) -> Result<bool, ApiError> {
         let deleted_services = db
             .run(move |conn| {
@@ -418,6 +439,7 @@ impl Service {
     }
 }
 
+/// Structure representing information for creating a new service
 #[derive(Insertable, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = services)]
@@ -428,6 +450,7 @@ pub struct NewService {
     pub available: Option<bool>,
 }
 
+/// Structure representing information for updating a service
 #[derive(Insertable, Serialize, Deserialize, Clone, AsChangeset)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = services)]
@@ -439,7 +462,7 @@ pub struct UpdateService {
 }
 
 // USERS TABLE
-
+/// Structure representing a user in the system
 #[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
 #[diesel(table_name = users)]
 pub struct User {
@@ -448,7 +471,9 @@ pub struct User {
     pub register_date: SystemTime,
 }
 
+/// Implementation of operations related to users in the system
 impl User {
+    /// Asynchronously finds a user by its ID
     pub async fn find_by_id(db: &Db, id: i64) -> Result<User, ApiError> {
         let user_info = db
             .run(move |conn| {
@@ -462,6 +487,7 @@ impl User {
         Ok(user_info)
     }
 
+    /// Asynchronously checks if a user with the given ID exists
     pub async fn exists(db: &Db, id: i64) -> Result<bool, ApiError> {
         let users_count = db
             .run(move |conn| {
@@ -479,6 +505,7 @@ impl User {
         }
     }
 
+    /// Asynchronously inserts a new user into the database
     pub async fn insert(db: &Db, user_value: NewUser) -> Result<User, ApiError> {
         let user_info = db
             .run(move |conn| {
@@ -492,6 +519,7 @@ impl User {
         Ok(user_info)
     }
 
+    /// Asynchronously retrieves a list of all users' referrals from the database
     pub async fn refs(db: &Db, id: i64) -> Result<Vec<User>, ApiError> {
         let refs = db
             .run(move |conn| {
@@ -505,6 +533,7 @@ impl User {
         Ok(refs)
     }
 
+    /// Asynchronously retrieves a list of all users from the database
     pub async fn list(db: &Db) -> Result<Vec<User>, ApiError> {
         let users_list = db
             .run(|conn| users_table.load(conn).map_err(|err| err.jsonify()))
@@ -514,6 +543,7 @@ impl User {
     }
 }
 
+/// Structure representing information for creating a new user
 #[derive(Insertable, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = users)]
@@ -525,6 +555,7 @@ pub struct NewUser {
 
 // SELLS TABLE
 
+/// Structure representing a sell record in the system
 #[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
 #[diesel(table_name = sells)]
 pub struct Sell {
@@ -541,7 +572,9 @@ pub struct Sell {
     pub status: i32,
 }
 
+/// Implementation of operations related to sells in the system
 impl Sell {
+    /// Asynchronously finds a sell by its ID
     pub async fn find_by_id(db: &Db, id: i32) -> Result<Sell, ApiError> {
         let sell_info = db
             .run(move |conn| {
@@ -555,6 +588,7 @@ impl Sell {
         Ok(sell_info)
     }
 
+    /// Asynchronously inserts a new sell into the database
     pub async fn insert(db: &Db, sell_value: NewSell) -> Result<Sell, ApiError> {
         let sell_info = db
             .run(move |conn| {
@@ -568,6 +602,7 @@ impl Sell {
         Ok(sell_info)
     }
 
+    /// Asynchronously updates an existing sell in the database
     pub async fn update(db: &Db, id: i32, sell_value: UpdateSell) -> Result<Sell, ApiError> {
         let sell_info = db
             .run(move |conn| {
@@ -581,6 +616,7 @@ impl Sell {
         Ok(sell_info)
     }
 
+    /// Asynchronously retrieves a list of all sells from the database
     pub async fn list(db: &Db) -> Result<Vec<Sell>, ApiError> {
         let sells_list = db
             .run(|conn| sells_table.load(conn).map_err(|err| err.jsonify()))
@@ -589,6 +625,7 @@ impl Sell {
         Ok(sells_list)
     }
 
+    /// Asynchronously retrieves a list of sells by a given referral ID
     pub async fn list_by_ref(db: &Db, ref_id: i64) -> Result<Vec<Sell>, ApiError> {
         let sells_list = db
             .run(move |conn| {
@@ -602,6 +639,7 @@ impl Sell {
         Ok(sells_list)
     }
 
+    /// Asynchronously retrieves a list of sells by a given user ID
     pub async fn list_by_user(db: &Db, user_id: i64) -> Result<Vec<Sell>, ApiError> {
         let sells_list = db
             .run(move |conn| {
@@ -616,6 +654,7 @@ impl Sell {
     }
 }
 
+/// Structure representing information for creating a new sell record
 #[derive(Insertable, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = sells)]
@@ -654,6 +693,7 @@ impl NewSell {
     }
 }
 
+/// Structure representing information for updating a sell record
 #[derive(Insertable, Serialize, Deserialize, Clone, AsChangeset)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = sells)]
@@ -690,6 +730,7 @@ impl UpdateSell {
     }
 }
 
+/// Structure representing login information
 #[derive(Queryable, Serialize, Deserialize, Ord, Eq, PartialEq, PartialOrd)]
 #[diesel(table_name = logins)]
 pub struct Login {
@@ -700,7 +741,9 @@ pub struct Login {
     pub register_date: SystemTime,
 }
 
-impl Login{
+/// Implementation of operations related to logins in the system
+impl Login {
+    /// Asynchronously finds a login by its ID
     pub async fn find_by_id(db: &Db, id: i32) -> Result<Login, ApiError> {
         let login_info = db
             .run(move |conn| {
@@ -714,6 +757,7 @@ impl Login{
         Ok(login_info)
     }
 
+    /// Asynchronously finds a login by its username
     pub async fn find_by_username(db: &Db, username: String) -> Result<Login, ApiError> {
         let login_info = db
             .run(move |conn| {
@@ -727,6 +771,7 @@ impl Login{
         Ok(login_info)
     }
 
+    /// Asynchronously inserts a new login into the database
     pub async fn insert(db: &Db, login_value: NewLogin) -> Result<Login, ApiError> {
         let login_info = db
             .run(move |conn| {
@@ -740,6 +785,7 @@ impl Login{
         Ok(login_info)
     }
 
+    /// Asynchronously updates an existing login in the database
     pub async fn update(db: &Db, id: i32, login_value: UpdateLogin) -> Result<Login, ApiError> {
         let login_info = db
             .run(move |conn| {
@@ -753,6 +799,7 @@ impl Login{
         Ok(login_info)
     }
 
+    /// Asynchronously retrieves a list of all logins from the database
     pub async fn list(db: &Db) -> Result<Vec<Login>, ApiError> {
         let logins_list = db
             .run(|conn| logins_table.load(conn).map_err(|err| err.jsonify()))
@@ -761,6 +808,7 @@ impl Login{
         Ok(logins_list)
     }
 
+    /// Asynchronously checks if a login with the given username exists
     pub async fn exists(db: &Db, username: String) -> Result<bool, ApiError> {
         let users_count = db
             .run(move |conn| {
@@ -777,9 +825,9 @@ impl Login{
             Ok(false)
         }
     }
-
 }
 
+/// Structure representing information for creating a new login
 #[derive(Insertable, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = logins)]
@@ -789,24 +837,26 @@ pub struct NewLogin {
     pub admin: Option<bool>,
 }
 
+/// Structure representing information for updating a login
 #[derive(Insertable, Serialize, Deserialize, Clone, AsChangeset)]
 #[serde(crate = "rocket::serde")]
 #[diesel(table_name = logins)]
 pub struct UpdateLogin {
     pub username: Option<String>,
     pub password_hash: Option<String>,
-    pub admin: Option<bool>, 
+    pub admin: Option<bool>,
 }
 
+/// Structure representing account information
 #[derive(Serialize, Deserialize)]
 pub struct AccountInfo {
     pub days: Option<i64>,
 }
 
+/// Structure representing login information
 #[derive(Serialize, Deserialize)]
-pub struct LoginInfo{
+pub struct LoginInfo {
     pub admin_key: Option<String>,
     pub username: String,
     pub password: String,
 }
-
