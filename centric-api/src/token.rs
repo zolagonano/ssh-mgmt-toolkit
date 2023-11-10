@@ -1,4 +1,4 @@
-use jsonwebtoken::{decode,encode, Algorithm, DecodingKey, Validation, EncodingKey, Header};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use rocket::http::Status;
 use rocket::request::Outcome;
 use rocket::request::{self, FromRequest, Request};
@@ -8,15 +8,18 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::consts::JWT_SECRET;
 
+/// Represents the claims included in the JWT token
 #[derive(Deserialize, Serialize)]
 pub struct Claims {
     pub role: String,
     pub exp: u64,
 }
 
+/// Represents a JWT token
 #[derive(Debug)]
 pub struct Token(String);
 
+/// Represents possible errors when dealing with API tokens
 #[derive(Debug)]
 pub enum ApiTokenError {
     Missing,
@@ -37,13 +40,14 @@ impl<'r> FromRequest<'r> for Token {
 }
 
 impl Token {
+    /// Generates a new JWT token
     pub fn generate() -> String {
         let now = SystemTime::now();
         let unix_time = now.duration_since(UNIX_EPOCH).unwrap().as_secs();
 
         let claims = Claims {
             role: "normal".to_string(),
-            exp: unix_time + (((60*60)*24)*14 /*2 week*/),
+            exp: unix_time + (((60 * 60) * 24) * 14/*2 week*/),
         };
         encode(
             &Header::default(),
@@ -53,10 +57,12 @@ impl Token {
         .unwrap()
     }
 
+    /// Converts the token to a string
     pub fn to_string(&self) -> String {
         self.0.to_string()
     }
 
+    /// Validates the token and returns the user role
     pub fn validate(&self) -> Result<Role, (Status, JsonValue)> {
         let decoded_token = match decode::<Claims>(
             &self.0,
@@ -71,12 +77,14 @@ impl Token {
     }
 }
 
+/// Represents user roles
 pub enum Role {
     Privileged,
     Normal,
 }
 
 impl Role {
+    /// Converts a string representation of a role to a Role enum
     pub fn from_str(role: &str) -> Self {
         match role.to_lowercase().as_str() {
             "privileged" => Role::Privileged,
@@ -84,6 +92,7 @@ impl Role {
         }
     }
 
+    /// Converts a Role enum to a string representation
     pub fn to_string(&self) -> String {
         match &self {
             Role::Privileged => String::from("privileged"),
