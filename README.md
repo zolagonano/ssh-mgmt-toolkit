@@ -70,6 +70,10 @@ Explore the `test.ipynb` notebooks provided in both `/node-api` and `/centric-ap
   - **HTTP Requests**: The communication is established through HTTP requests.
   - **Communication Flow**: The `centric-api` sends requests to multiple `node-api` instances (Node-1, Node-2, Node-3, Node-4), which independently process the requests.
 
+### License
+
+This project is licensed under the terms of the **BSD 3-Clause License**. See the [LICENSE](LICENSE) file for details.
+
 ### Note
 
 This project was initially developed for personal use. Feel free to explore, modify, and adapt the codebase according to your requirements. If you encounter issues or have suggestions, please open an issue on the GitHub repository.
