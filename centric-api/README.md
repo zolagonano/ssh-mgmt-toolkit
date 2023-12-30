@@ -26,6 +26,10 @@ cd centric-api
 cargo run
 ```
 
+## License
+
+This project is licensed under the terms of the **BSD 3-Clause License**. See the [LICENSE](LICENSE) file for details.
+
 ## Testing
 
 Explore the `test.ipynb` notebook provided in `/centric-api` for tests and examples.
