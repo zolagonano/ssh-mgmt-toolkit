@@ -2,6 +2,14 @@
 name = "node-api"
 version = "0.1.0"
 edition = "2021"
+authors = ["Zola Gonano <zolagonano@protonmail.com>"]
+description = "Node API of ssh-mgmt-toolkit"
+homepage = "https://github.com/zolagonano/ssh-mgmt-toolkit.git"
+repository = "https://github.com/zolagonano/ssh-mgmt-toolkit.git"
+keywords = ["ssh", "api"]
+categories = ["command-line-utilities"]
+license = "BSD-3-Clause"
+readme = "README.md"
 
 [lib]
 name = "lib"
