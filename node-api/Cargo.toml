@@ -3,6 +3,29 @@ name = "node-api"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "lib"
+path = "src/lib.rs"
 
 [dependencies]
+rocket = "0.4.11"
+systemstat = "0.2.3"
+serde = { version = "1.0.152", features = ["derive"]}
+users = "0.11.0"
+regex = "1.7.1"
+pwhash = "1.0.0"
+jsonwebtoken = "8.2.0"
+sha2 = "0.10.6"
+time = { version = "0.3.20", features = ["formatting"] }
+serde_json = "1.0.95"
+rand = "0.8.5"
+config = "0.13.3"
+lazy_static = "1.4.0"
+
+[dependencies.rocket_contrib]
+version = "0.4.11"
+features = ["json"]
+
+[profile.release]
+lto = true
+
